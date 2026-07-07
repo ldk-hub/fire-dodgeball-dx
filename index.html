@@ -560,6 +560,9 @@ function update(){
   // ---- CPU AI ----
   const lvl=cpuLevel;
   P.filter(c=>c.team===1&&!c.gone&&c.hp>0).forEach(c=>{
+    if(ball.holder===c)c.holdT=(c.holdT||0)+1;else c.holdT=0;
+    if(c.holdT>240){ // 워치독: 상태가 어떻게 꼬여도 4초 이상 들고 있으면 강제 투척
+      c.fireT=0;c.lock=0;c.anim='idle';throwBall(c,false);c.aiT=rnd(.6,1.2);c.holdT=0;return;}
     if(LOCKED.includes(c.anim)&&c.anim!=='windup')return;
     c.aiT-=1/60;
     const h=homePos(c),b=bounds(c);
@@ -570,9 +573,9 @@ function update(){
       if(c.aiT<=0&&!c.fireT){
         const canFire=c.role==='in'&&!!skillOf(c);
         const roll=Math.random();
-        if(canFire&&roll<.10+.07*lvl){setAnim(c,'windup');c.fireT=40;c.aiT=2;}
-        else if(roll<.3&&c.role==='in'){passBall(c);c.aiT=rnd(.9,1.7);}
-        else{throwBall(c,false);c.aiT=rnd(.8,1.6-lvl*.15);}
+        if(canFire&&roll<.16+.08*lvl){setAnim(c,'windup');c.fireT=40;c.aiT=2;}
+        else if(roll<.22&&c.role==='in'){passBall(c);c.aiT=rnd(.7,1.3);}
+        else{throwBall(c,false);c.aiT=rnd(.5,1.2-lvl*.12);}
       }
       if(c.fireT>0){c.fireT--;const sc=skillOf(c);flame(c.x-c.face*14,c.y-58,sc?[sc.col,sc.col2]:null);}
     }else if(!ball.holder&&!ball.flying){
