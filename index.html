@@ -701,6 +701,19 @@ function update(){
       for(const c of P){if(c.gone||c.hp<=0||c.anim==='ko'||c.anim==='launch'||c.anim==='down')continue;
         if(dist(ball,c)<22&&ball.z<40){ball.holder=c;ball.vz=0;sfx(500,.05,'square',.05);break;}}
       ball.x=clamp(ball.x,CT.x-70,CT.x+CT.w+70);ball.y=clamp(ball.y,CT.y-20,CT.y+CT.h+30);
+      // 볼보이: 구석·데드존에 방치된 공을 코트 안으로 되던짐 (경기 흐름 유지)
+      const inCourt=ball.x>CT.x&&ball.x<CT.x+CT.w&&ball.y>CT.y&&ball.y<CT.y+CT.h;
+      const slow=Math.hypot(ball.vx,ball.vy)<.5&&ball.z<4;
+      ball.idleT=slow?(ball.idleT||0)+1:0;
+      if(ball.idleT>(inCourt?150:30)){
+        const tx=ball.x<CT.cx?CT.x+CT.w*.3:CT.x+CT.w*.7;
+        const ty=CT.y+CT.h*(.35+Math.random()*.3);
+        const d=Math.max(1,Math.hypot(tx-ball.x,ty-ball.y));
+        const sp=Math.min(17,d/13); // 마찰 감쇠 감안해 목표점 근처 착지
+        ball.vx=(tx-ball.x)/d*sp;ball.vy=(ty-ball.y)/d*sp;
+        ball.vz=5.5;ball.z=Math.max(ball.z,2);ball.idleT=0;
+        flash('볼보이!');sfx(900,.09,'square',.06,150);
+      }
     }
   }
 }
